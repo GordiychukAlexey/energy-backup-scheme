@@ -243,14 +243,33 @@
       border-radius: 10px;
       background: var(--surface);
     }
-    .cell-string {
-      display: flex;
-      align-items: center;
-      gap: 7px;
+    .cell-series {
+      display: grid;
+      grid-template-columns: minmax(350px, 1fr) 110px minmax(350px, 1fr);
+      align-items: stretch;
+      gap: 12px;
       min-width: 900px;
     }
+    .cell-group {
+      padding: 12px;
+      border: 2px solid var(--accent);
+      border-radius: 9px;
+      background: var(--accent-soft);
+    }
+    .group-label {
+      margin-bottom: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      text-align: center;
+    }
+    .cell-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
     .cell {
-      min-width: 78px;
+      flex: 1 1 0;
+      min-width: 62px;
       padding: 13px 7px;
       border: 1px solid var(--line);
       border-radius: 7px;
@@ -259,11 +278,13 @@
     }
     .cell small { display: block; color: var(--muted); }
     .series-link { color: var(--muted); font-size: 20px; }
-    .module-boundary {
-      align-self: stretch;
-      width: 8px;
-      margin-inline: 4px;
-      border-inline: 2px dashed var(--accent);
+    .series-bridge {
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      text-align: center;
     }
     .sense-row {
       display: grid;
@@ -360,7 +381,6 @@
       <a href="#phases">Три фазы</a>
       <a href="#focus">Фаза L1</a>
       <a href="#battery">АКБ 8S2P</a>
-      <a href="#loads">Нагрузки</a>
       <a href="#compatibility">Совместимость</a>
       <a href="#checks">Проверки</a>
       <a href="#glossary">Словарь</a>
@@ -376,12 +396,6 @@
         <a class="term" href="#term-n">N</a>. За ним последовательно установлен MUST EP18-3024 PRO.
         Вторая и третья фазы электрически независимы от этой резервной ветви.
       </div>
-      <div class="callout warning">
-        <strong>Аккумуляторная часть требует подтверждения точных моделей Daly.</strong>
-        Производитель Daly прямо указывает, что стандартные BMS нельзя просто соединять параллельно.
-        Запрошенная схема с двумя Daly 250 А допустима только если конкретные BMS поддерживают параллельную работу
-        либо каждая укомплектована совместимым <a class="term" href="#term-parallel-module">модулем параллельного соединения Daly</a>.
-      </div>
     </section>
 
     <section id="phases">
@@ -393,7 +407,7 @@
           <div class="phase-head"><b>L1 — основная ветвь</b><span class="tag">фокус документа</span></div>
           <p><a class="term" href="#term-qf-branch">QF-L1 2P</a> → однофазный «Энергия Hybrid» → MUST → резервный щит.</p>
           <p><strong>Потребители:</strong> две сплит-системы, компьютер и холодильник Sharp.</p>
-          <p><strong>Резерв:</strong> две параллельные батарейные ветви 8S, каждая со своей Daly BMS 250 А.</p>
+          <p><strong>Резерв:</strong> две ветви 8S с имеющимися Daly BMS 250 А и 150 А.</p>
         </article>
         <article class="phase-lane">
           <div class="phase-head"><b>L2 — отдельная сеть</b><span class="tag">без расчёта</span></div>
@@ -408,12 +422,8 @@
           <p>Состав нагрузок следует подбирать так, чтобы компенсировать загрузку L1 и L2.</p>
         </article>
       </div>
-      <div class="callout info">
-        <strong>Координация фаз.</strong>
-        Нагрузку нужно фактически измерить по каждой фазе токовыми клещами в обычном и пусковом режимах.
-        Пять холодильников на L2 и две сплит-системы на L1 создают заметные пусковые нагрузки; оставшиеся потребители L3
-        следует распределять с учётом баланса фаз. Нейтрали после разных УЗО/дифавтоматов не смешиваются.
-      </div>
+      <p>Фактическую нагрузку следует измерить по каждой фазе; распределение по L1–L3 корректируют для разумного баланса.
+        Нейтрали после разных УЗО/дифавтоматов не смешиваются.</p>
     </section>
 
     <section id="focus">
@@ -482,22 +492,40 @@
 
     <section id="battery">
       <h2>Аккумулятор: четыре группы 4S → две ветви 8S → общий 8S2P</h2>
-      <p>Всего используется 16 одинаковых ячеек. Группы G1 и G2 образуют батарейную ветвь A,
-        группы G3 и G4 — ветвь B. Каждая ветвь имеет собственную Daly BMS 8S 250 А.</p>
+      <p>Всего используется 16 одинаковых ячеек. Группы G1 и G2 образуют батарейную ветвь A с Daly BMS 8S 250 А,
+        группы G3 и G4 — ветвь B с Daly BMS 8S 150 А.</p>
+
+      <div class="callout danger">
+        <strong>Подсказка: Parallel Module 15 А и основные риски.</strong>
+        15 А — ток выравнивания между PACK, а не ток нагрузки MUST. Для каждой ветви нужен отдельный модуль,
+        совместимый с разъёмом и прошивкой её BMS. Он не компенсирует различие имеющихся BMS 250/150 А:
+        ток делится неравномерно, а при отключении одной ветви другая принимает всю нагрузку. BMS 150 А может
+        перегрузиться при мощности около 3 кВт и пусковых бросках. Без подтверждённой совместимости параллелить нельзя.
+      </div>
 
       <h3>1. Одна ветвь: две группы 4S последовательно</h3>
       <div class="cell-diagram">
         <div class="branch-title">Ветвь A: группа G1 (4S) + группа G2 (4S) = 8S</div>
-        <div class="cell-string" aria-label="Восемь ячеек последовательно, разделённые на две группы по четыре ячейки">
-          <span class="cell"><b>A1</b><small>ячейка 1</small></span><span class="series-link">+</span>
-          <span class="cell"><b>A2</b><small>ячейка 2</small></span><span class="series-link">+</span>
-          <span class="cell"><b>A3</b><small>ячейка 3</small></span><span class="series-link">+</span>
-          <span class="cell"><b>A4</b><small>ячейка 4</small></span>
-          <span class="module-boundary" title="Граница двух физических групп 4S"></span>
-          <span class="cell"><b>A5</b><small>ячейка 5</small></span><span class="series-link">+</span>
-          <span class="cell"><b>A6</b><small>ячейка 6</small></span><span class="series-link">+</span>
-          <span class="cell"><b>A7</b><small>ячейка 7</small></span><span class="series-link">+</span>
-          <span class="cell"><b>A8</b><small>ячейка 8</small></span>
+        <div class="cell-series" aria-label="Две последовательные группы по четыре ячейки">
+          <div class="cell-group">
+            <div class="group-label">G1 · первая физическая группа 4S</div>
+            <div class="cell-row">
+              <span class="cell"><b>A1</b><small>ячейка 1</small></span><span class="series-link">→</span>
+              <span class="cell"><b>A2</b><small>ячейка 2</small></span><span class="series-link">→</span>
+              <span class="cell"><b>A3</b><small>ячейка 3</small></span><span class="series-link">→</span>
+              <span class="cell"><b>A4</b><small>ячейка 4</small></span>
+            </div>
+          </div>
+          <div class="series-bridge">A4+ соединить<br>с A5−<br><span class="series-link">→</span></div>
+          <div class="cell-group">
+            <div class="group-label">G2 · вторая физическая группа 4S</div>
+            <div class="cell-row">
+              <span class="cell"><b>A5</b><small>ячейка 5</small></span><span class="series-link">→</span>
+              <span class="cell"><b>A6</b><small>ячейка 6</small></span><span class="series-link">→</span>
+              <span class="cell"><b>A7</b><small>ячейка 7</small></span><span class="series-link">→</span>
+              <span class="cell"><b>A8</b><small>ячейка 8</small></span>
+            </div>
+          </div>
         </div>
         <div class="sense-row" aria-label="Точки подключения измерительного шлейфа BMS">
           <span>B0: общий −</span><span>B1: A1+</span><span>B2: A2+</span><span>B3: A3+</span><span>B4: A4+</span>
@@ -516,22 +544,26 @@
       <div class="pack-parallel">
         <article class="pack">
           <h4>PACK A: G1(4S) + G2(4S)</h4>
-          <p>8S LiFePO₄ → Daly BMS-A 250 А → совместимый Daly Parallel Module-A.</p>
-          <p>Плюс: PACK A+ → <a class="term" href="#term-fdc">F-A</a> → <a class="term" href="#term-qsdc">QS-A</a> → шина «+».</p>
-          <p>Минус: PACK A− → B− BMS-A; P−/выход parallel module → шина «−».</p>
+          <p>8S LiFePO₄</p>
+          <p><strong>Daly BMS-A 250 А</strong></p>
+          <p>Дополнительная защита: совместимый Parallel Module-A 15 А*</p>
         </article>
         <div class="bus"><a class="term" href="#term-busbar">Общие шины<br>«+» и «−»</a></div>
         <article class="pack">
           <h4>PACK B: G3(4S) + G4(4S)</h4>
-          <p>8S LiFePO₄ → Daly BMS-B 250 А → совместимый Daly Parallel Module-B.</p>
-          <p>Плюс: PACK B+ → <a class="term" href="#term-fdc">F-B</a> → <a class="term" href="#term-qsdc">QS-B</a> → шина «+».</p>
-          <p>Минус: PACK B− → B− BMS-B; P−/выход parallel module → шина «−».</p>
+          <p>8S LiFePO₄</p>
+          <p><strong>Daly BMS-B 150 А</strong></p>
+          <p>Дополнительная защита: совместимый Parallel Module-B 15 А*</p>
         </article>
       </div>
+      <p><strong>Одинаково для обеих ветвей:</strong> PACK+ → <a class="term" href="#term-fdc">ветвевой предохранитель</a>
+        → <a class="term" href="#term-qsdc">разъединитель</a> → шина «+»; PACK− → B− BMS, затем P− BMS → шина «−».
+        Parallel Module подключается к BMS отдельными проводами строго по схеме Daly, а не включается последовательно
+        в силовой кабель. *Совместимость модулей с конкретными BMS и их прошивками должна быть подтверждена.</p>
       <p class="formula">Шины «+ / −» → главный DC-предохранитель → главный разъединитель и предзаряд → BAT+ / BAT− MUST.</p>
 
       <div class="callout danger">
-        <strong>Две обычные Daly BMS нельзя считать параллельно совместимыми только из-за номинала 250 А.</strong>
+        <strong>Две обычные Daly BMS нельзя считать параллельно совместимыми.</strong>
         Официальные материалы Daly требуют для параллельных PACK систему «BMS + parallel protector/module»,
         подобранную к точной модели. До подтверждения маркировки обеих BMS и наличия соответствующих модулей
         прямое объединение P− двух стандартных BMS в общую шину не разрешается.
@@ -570,37 +602,11 @@
 
       <div class="stats">
         <div class="stat"><b>8S2P</b><span>Две независимые 8S ветви параллельно</span></div>
-        <div class="stat"><b>2 × 250 А</b><span>Две Daly BMS; каждая рассчитана на свой PACK</span></div>
+        <div class="stat"><b>250 + 150 А</b><span>Имеющиеся Daly BMS имеют разные номиналы</span></div>
         <div class="stat"><b>≈130–155 А</b><span>Оценка общего тока АКБ при выходе MUST 3 кВт</span></div>
       </div>
       <p>Если ёмкость одной ячейки равна C А·ч, номинальная ёмкость всей сборки приблизительно 2C А·ч,
         а энергия — 25,6 × 2C Вт·ч до учёта допустимой глубины разряда и потерь.</p>
-    </section>
-
-    <section id="loads">
-      <h2>Проверка нагрузок фазы L1</h2>
-      <table>
-        <thead><tr><th>Нагрузка</th><th>Что учитывать</th><th>Условие работы от MUST</th></tr></thead>
-        <tbody>
-          <tr><td>Сплит-система №1</td><td>Фактическая входная мощность и максимальный ток с шильдика, а не мощность охлаждения в BTU.</td><td>Предпочтительно инверторная модель; запуск и максимальная мощность проверяются измерением.</td></tr>
-          <tr><td>Сплит-система №2</td><td>Не должна одновременно выводить суммарную нагрузку за пределы 3 кВт.</td><td>Желательно задержанное или приоритетное включение после первой сплит-системы.</td></tr>
-          <tr><td>Компьютер</td><td>Системный блок, монитор и периферия учитываются вместе; БП может иметь краткий бросок тока.</td><td>Обычно допустим при сохранении запаса для компрессоров.</td></tr>
-          <tr><td>Холодильник Sharp</td><td>Компрессор имеет пусковой ток; модель и потребляемая мощность пока неизвестны.</td><td>Считать приоритетной нагрузкой и не отключать системой разгрузки раньше кондиционеров.</td></tr>
-        </tbody>
-      </table>
-      <div class="callout warning">
-        <strong>Нельзя заранее подтвердить одновременную работу двух сплит-систем, компьютера и холодильника.</strong>
-        Номинал MUST — 3 кВт, а практический длительный ориентир с запасом — около 2,4 кВт.
-        Нужны мощности и максимальные токи обеих сплит-систем и холодильника Sharp.
-        Если сумма выше, установить <a class="term" href="#term-load-shedding">разгрузку нагрузки</a>:
-        холодильник и компьютер оставить приоритетными, кондиционеры отключать по току, низкому заряду или очередности.
-      </div>
-      <div class="callout info">
-        <strong>Нагрузка «Энергии» в сетевом режиме больше нагрузки MUST.</strong>
-        Через однофазный стабилизатор одновременно проходят мощность потребителей и мощность зарядки аккумуляторов.
-        Его номинал должен покрывать нагрузку до 3 кВт плюс заряд MUST и иметь запас с учётом просадки входного напряжения.
-        Точная модель и мощность однофазного Hybrid всё ещё нужны.
-      </div>
     </section>
 
     <section id="compatibility">
@@ -627,10 +633,10 @@
     <section id="checks">
       <h2>Обязательные проверки до монтажа</h2>
       <div class="grid-2">
-        <article class="card"><h3>Оборудование</h3><p>Точная модель и мощность однофазного Hybrid; полные артикулы обеих Daly 8S 250 А; подтверждение поддержки PACK Parallel и подходящие parallel modules.</p></article>
+        <article class="card"><h3>Оборудование</h3><p>Точная модель и мощность однофазного Hybrid; полные артикулы Daly 8S 250 А и 150 А; наличие разъёма Parallel, совместимой прошивки и подходящих модулей 15 А.</p></article>
         <article class="card"><h3>Ячейки</h3><p>Одинаковая модель, ёмкость, внутреннее сопротивление и состояние всех 16 ячеек; механическая стяжка по паспорту ячеек.</p></article>
         <article class="card"><h3>Параллельное соединение</h3><p>Выравнивание напряжения PACK A и PACK B до объединения, отдельные предохранители, одинаковые силовые кабели и общие шины достаточного сечения.</p></article>
-        <article class="card"><h3>Нагрузки</h3><p>Шильдики двух сплит-систем и холодильника Sharp, измерение установившегося и пускового тока, алгоритм разгрузки.</p></article>
+        <article class="card"><h3>Нагрузки</h3><p>Проверить, что их суммарная и пусковая мощность не превышает возможности MUST и оставшейся одиночной батарейной ветви.</p></article>
         <article class="card"><h3>Нейтраль и УЗО</h3><p>Проверить, коммутирует ли MUST нейтраль и формирует ли связь N–PE в батарейном режиме; после этого выбрать схему УЗО/дифавтоматов.</p></article>
         <article class="card"><h3>Настройки зарядки</h3><p>Профиль Li/User-Defined, отключённое выравнивание, зарядный ток не выше допуска ячеек, каждой BMS, кабелей и мощности L1.</p></article>
       </div>
@@ -642,7 +648,7 @@
         <a href="https://energiya.com/pages/img/energy-hybrid.pdf">Руководство «Энергия Hybrid»</a> ·
         <a href="https://baikaltesla.com/wp-content/uploads/2025/04/Must-EP18_3024-PRO-Manual_RUS.pdf">Руководство MUST EP18-3024 PRO</a> ·
         <a href="https://www.dalybms.com/8s-bms-wiring-tutorial/">Официальная схема Daly 8S</a> ·
-        <a href="https://www.dalybms.com/daly-pack-parallel-bms-matching-instructions1a-daly-product/">Официальные указания Daly Pack Parallel</a>.
+        <a href="https://www.dalybms.com/daly-pack-parallel-bms-matching-instructions15a-daly-product/">Официальные указания Daly Pack Parallel 15 А</a>.
       </p>
       <div class="callout danger">
         Это принципиальная схема, а не рабочий проект. Напряжение сети опасно для жизни, а 8S2P LiFePO₄ способна отдать ток,
@@ -683,7 +689,7 @@
           <tr id="term-8s2p" class="glossary-row"><td>8S2P</td><td>Две параллельные ветви по восемь ячеек</td><td>Каждая ветвь имеет 25,6 В; параллель увеличивает ёмкость, но не напряжение.</td></tr>
           <tr id="term-bms" class="glossary-row"><td>BMS</td><td>Система управления батареей</td><td>Контролирует напряжения ячеек, температуру и ток, выполняет аварийное отключение.</td></tr>
           <tr id="term-sense" class="glossary-row"><td>B0…B8</td><td>Измерительные точки BMS</td><td>B0 подключается к общему минусу, B1…B8 — последовательно к плюсу каждой ячейки вплоть до общего плюса.</td></tr>
-          <tr id="term-parallel-module" class="glossary-row"><td>Daly Parallel Module</td><td>Модуль безопасной параллельной работы PACK</td><td>Согласованный с BMS модуль, ограничивающий нежелательные токи между параллельными батареями. Требуется подтверждение Daly для точной модели.</td></tr>
+          <tr id="term-parallel-module" class="glossary-row"><td>Daly Parallel Module 15 А</td><td>Модуль безопасной параллельной работы PACK</td><td>Ограничивает уравнительный ток между батареями до 15 А; основной ток нагрузки через него не проходит. Работает только с BMS, имеющей подходящие разъём Parallel и прошивку. Для каждой ветви нужен свой совместимый модуль.</td></tr>
           <tr id="term-fdc" class="glossary-row"><td>F-A / F-B / F-DC</td><td>DC-предохранители</td><td>Отдельно защищают каждую батарейную ветвь и общую линию. Должны иметь DC-рейтинг и достаточную отключающую способность.</td></tr>
           <tr id="term-qsdc" class="glossary-row"><td>QS-A / QS-B / QS-DC</td><td>DC-разъединители</td><td>Позволяют безопасно отключить отдельную ветвь или весь аккумулятор.</td></tr>
           <tr id="term-busbar" class="glossary-row"><td>Шины «+» и «−»</td><td>Общие силовые распределители</td><td>Точки, в которых две защищённые ветви соединяются параллельно и откуда питание идёт к MUST.</td></tr>
