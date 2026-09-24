@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Схема совместного подключения стабилизатора Энергия Hybrid, инвертора MUST EP18-3024 PRO и аккумулятора 8S LiFePO4.">
-  <title>Энергия Hybrid + MUST EP18-3024 PRO — схема электроснабжения</title>
+  <meta name="description" content="Трёхфазное распределение частного дома с однофазным стабилизатором Энергия Hybrid, MUST EP18-3024 PRO и двумя параллельными аккумуляторами 8S LiFePO4.">
+  <title>Однофазный Энергия Hybrid + MUST + 8S2P LiFePO₄</title>
   <style>
     :root {
       color-scheme: light dark;
@@ -196,6 +196,114 @@
     }
     .stat b { display: block; font-size: 25px; }
     .stat span { color: var(--muted); font-size: 13px; }
+    .phase-map {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .phase-lane {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--surface);
+    }
+    .phase-lane.focus { border: 2px solid var(--accent); background: var(--accent-soft); }
+    .phase-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding-bottom: 9px;
+      border-bottom: 1px solid var(--line);
+    }
+    .phase-head b { font-size: 18px; }
+    .tag {
+      display: inline-block;
+      padding: 3px 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .chain {
+      display: flex;
+      align-items: stretch;
+      gap: 7px;
+      min-width: 1050px;
+    }
+    .chain .node { flex: 1 1 0; min-width: 135px; }
+    .chain .arrow { flex: 0 0 28px; }
+    .cell-diagram {
+      overflow-x: auto;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--surface);
+    }
+    .cell-string {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      min-width: 900px;
+    }
+    .cell {
+      min-width: 78px;
+      padding: 13px 7px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--surface-2);
+      text-align: center;
+    }
+    .cell small { display: block; color: var(--muted); }
+    .series-link { color: var(--muted); font-size: 20px; }
+    .module-boundary {
+      align-self: stretch;
+      width: 8px;
+      margin-inline: 4px;
+      border-inline: 2px dashed var(--accent);
+    }
+    .sense-row {
+      display: grid;
+      grid-template-columns: repeat(9, minmax(62px, 1fr));
+      gap: 5px;
+      min-width: 900px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 11px;
+      text-align: center;
+    }
+    .pack-parallel {
+      display: grid;
+      grid-template-columns: 1fr 126px 1fr;
+      gap: 12px;
+      align-items: stretch;
+    }
+    .pack {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--surface);
+    }
+    .pack h4 { margin: 0 0 10px; }
+    .bus {
+      display: grid;
+      place-items: center;
+      padding: 12px 6px;
+      border-block: 4px solid var(--accent);
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+    }
+    .formula {
+      padding: 14px 16px;
+      border: 1px dashed var(--line);
+      border-radius: 8px;
+      background: var(--surface-2);
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
     table {
       width: 100%;
       border-collapse: separate;
@@ -220,7 +328,8 @@
     @media (max-width: 760px) {
       .page { width: min(100% - 22px, 1180px); }
       .hero { padding-top: 28px; }
-      .grid-2, .stats { grid-template-columns: 1fr; }
+      .grid-2, .stats, .phase-map, .pack-parallel { grid-template-columns: 1fr; }
+      .bus { min-height: 70px; border-inline: 4px solid var(--accent); border-block: 0; }
       .print { display: none; }
       th, td { min-width: 150px; }
       table { display: block; overflow-x: auto; }
@@ -240,19 +349,19 @@
 </head>
 <body id="top">
   <header class="hero page">
-    <span class="eyebrow">Техническое заключение и принципиальная схема</span>
-    <h1>Энергия Hybrid + MUST EP18-3024 PRO + 8S LiFePO₄</h1>
-    <p class="lead">Совместное электроснабжение частного дома от нестабильной трёхфазной сети с резервированием одной фазы.</p>
+    <span class="eyebrow">Обновлённая схема электроснабжения частного дома</span>
+    <h1>Однофазный «Энергия Hybrid» + MUST + аккумулятор 8S2P</h1>
+    <p class="lead">Трёхфазный ввод разделён на три независимые однофазные ветви. Основной расчёт и схемы относятся к фазе L1 с резервным питанием.</p>
   </header>
 
   <nav class="toc" aria-label="Разделы документа">
     <div class="page toc-inner">
       <a href="#verdict">Вывод</a>
-      <a href="#scheme">Схема</a>
-      <a href="#battery">Аккумулятор</a>
-      <a href="#compatibility">Совместимость</a>
-      <a href="#instability">Нестабильная сеть</a>
+      <a href="#phases">Три фазы</a>
+      <a href="#focus">Фаза L1</a>
+      <a href="#battery">АКБ 8S2P</a>
       <a href="#loads">Нагрузки</a>
+      <a href="#compatibility">Совместимость</a>
       <a href="#checks">Проверки</a>
       <a href="#glossary">Словарь</a>
       <button class="print" type="button" onclick="window.print()">Печать / PDF</button>
@@ -262,351 +371,331 @@
   <main class="page">
     <section id="verdict">
       <div class="callout success">
-        <strong>Вывод: устройства совместимы при последовательном подключении.</strong>
-        Трёхфазный ввод проходит через стабилизатор «Энергия Hybrid». От одной его стабилизированной фазы
-        <a class="term" href="#term-l123">L1′</a> и <a class="term" href="#term-n">N</a> питается MUST.
-        MUST резервирует только отдельную однофазную группу. Аккумулятор — 
-        <a class="term" href="#term-8s">8S</a> <a class="term" href="#term-lifepo4">LiFePO₄</a> с
-        <a class="term" href="#term-bms">BMS</a>.
+        <strong>Уточнение принято: «Энергия Hybrid» — однофазный.</strong>
+        Он подключается только к фазе <a class="term" href="#term-l123">L1</a> и рабочей нейтрали
+        <a class="term" href="#term-n">N</a>. За ним последовательно установлен MUST EP18-3024 PRO.
+        Вторая и третья фазы электрически независимы от этой резервной ветви.
+      </div>
+      <div class="callout warning">
+        <strong>Аккумуляторная часть требует подтверждения точных моделей Daly.</strong>
+        Производитель Daly прямо указывает, что стандартные BMS нельзя просто соединять параллельно.
+        Запрошенная схема с двумя Daly 250 А допустима только если конкретные BMS поддерживают параллельную работу
+        либо каждая укомплектована совместимым <a class="term" href="#term-parallel-module">модулем параллельного соединения Daly</a>.
       </div>
     </section>
 
-    <section id="scheme">
-      <h2>Подробная однолинейная схема</h2>
-      <p>Подчёркнутые пунктиром обозначения можно нажать, чтобы перейти к их объяснению в словаре.</p>
+    <section id="phases">
+      <h2>Распределение трёх фаз ввода</h2>
+      <p>После вводного автомата, счётчика, <a class="term" href="#term-spd">УЗИП</a> и корректного разделения
+        <a class="term" href="#term-pen">PEN</a> каждая фаза получает собственную защиту и свою группу потребителей.</p>
+      <div class="phase-map">
+        <article class="phase-lane focus">
+          <div class="phase-head"><b>L1 — основная ветвь</b><span class="tag">фокус документа</span></div>
+          <p><a class="term" href="#term-qf-branch">QF-L1 2P</a> → однофазный «Энергия Hybrid» → MUST → резервный щит.</p>
+          <p><strong>Потребители:</strong> две сплит-системы, компьютер и холодильник Sharp.</p>
+          <p><strong>Резерв:</strong> две параллельные батарейные ветви 8S, каждая со своей Daly BMS 250 А.</p>
+        </article>
+        <article class="phase-lane">
+          <div class="phase-head"><b>L2 — отдельная сеть</b><span class="tag">без расчёта</span></div>
+          <p><a class="term" href="#term-qf-branch">QF-L2 2P</a> → стабилизатор VoTo → отдельный щит.</p>
+          <p><strong>Потребители:</strong> группа из пяти холодильников.</p>
+          <p>Параметры VoTo и расчёт пусковых токов этой группы в документ не входят.</p>
+        </article>
+        <article class="phase-lane">
+          <div class="phase-head"><b>L3 — бытовая сеть</b><span class="tag">без стабилизатора</span></div>
+          <p><a class="term" href="#term-qf-branch">QF-L3 2P</a> → щит остальных потребителей домовладения.</p>
+          <p>Стабилизации и аккумуляторного резерва на этой фазе нет.</p>
+          <p>Состав нагрузок следует подбирать так, чтобы компенсировать загрузку L1 и L2.</p>
+        </article>
+      </div>
+      <div class="callout info">
+        <strong>Координация фаз.</strong>
+        Нагрузку нужно фактически измерить по каждой фазе токовыми клещами в обычном и пусковом режимах.
+        Пять холодильников на L2 и две сплит-системы на L1 создают заметные пусковые нагрузки; оставшиеся потребители L3
+        следует распределять с учётом баланса фаз. Нейтрали после разных УЗО/дифавтоматов не смешиваются.
+      </div>
+    </section>
 
+    <section id="focus">
+      <h2>Подробная схема фазы L1</h2>
+      <p>Пунктирно подчёркнутые обозначения ведут к объяснениям в конце страницы.</p>
       <div class="diagram">
-        <div class="diagram-inner">
-          <div class="branch-title">Сетевая и стабилизированная часть</div>
-          <div class="flow">
-            <article class="node">
-              <h4>Ввод 3Ф</h4>
-              <p><a class="term" href="#term-l123">L1 · L2 · L3</a> · <a class="term" href="#term-n">N</a> · <a class="term" href="#term-pe">PE</a></p>
-              <p><a class="term" href="#term-split-pen">После учёта и разделения PEN</a>.</p>
-            </article>
-            <div class="arrow" aria-hidden="true">→</div>
-            <article class="node">
-              <h4>Вводная защита</h4>
-              <p><a class="term" href="#term-qf-in">QF-IN</a> + <a class="term" href="#term-spd">УЗИП</a>.</p>
-              <p><a class="term" href="#term-t1-t2">T1+T2</a> для <a class="term" href="#term-vl">ВЛ</a> либо T2 по проекту.</p>
-            </article>
-            <div class="arrow" aria-hidden="true">→</div>
-            <article class="node primary">
-              <h4>Энергия Hybrid 3Ф</h4>
-              <p><a class="term" href="#term-in-out">IN</a>: L1/L2/L3/N/PE.</p>
-              <p><a class="term" href="#term-in-out">OUT</a>: L1′/L2′/L3′/N/PE.</p>
-              <p>Встроенный <a class="term" href="#term-bypass">байпас</a> пропускает сеть без стабилизации.</p>
-            </article>
-            <div class="arrow" aria-hidden="true">→</div>
-            <article class="node">
-              <h4><a class="term" href="#term-board-energy">ЩР-ЭНЕРГИЯ</a></h4>
-              <p>Автоматы прямых нагрузок по фазам и отдельный трёхфазный автомат при необходимости.</p>
-            </article>
-            <div class="arrow" aria-hidden="true">→</div>
-            <article class="node">
-              <h4>Потребители «Энергии»</h4>
-              <p>Бойлер, плита, отопление, насосы, кондиционеры, компрессоры и допустимые трёхфазные нагрузки.</p>
-            </article>
-          </div>
-
-          <div class="branch-title">Однофазная резервная ветвь от L1′ + N + PE</div>
-          <div class="flow">
-            <article class="node">
-              <h4><a class="term" href="#term-qf-m">QF-M 2P</a></h4>
-              <p>Отдельный автомат на вход MUST. Руководство рекомендует 32 А.</p>
-            </article>
-            <div class="arrow" aria-hidden="true">→</div>
-            <article class="node primary">
-              <h4>MUST EP18-3024 PRO</h4>
-              <p><a class="term" href="#term-ac">AC</a> IN: L1′ + N + PE.</p>
-              <p>AC OUT: <a class="term" href="#term-lrnr">L-R + N-R</a> + PE.</p>
-              <p>Передача энергии в сеть отключена.</p>
-            </article>
-            <div class="arrow" aria-hidden="true">→</div>
-            <article class="node">
-              <h4><a class="term" href="#term-qf-o">QF-O</a> + <a class="term" href="#term-qs-byp">QS-BYP 2P</a></h4>
-              <p><a class="term" href="#term-i0ii">I–0–II</a>, тип <a class="term" href="#term-bbm">break-before-make</a>.</p>
-              <p>Вход I — стабилизированная сеть через <a class="term" href="#term-qf-b">QF-B 2P</a>. Вход II — MUST.</p>
-            </article>
-            <div class="arrow" aria-hidden="true">→</div>
-            <article class="node">
-              <h4><a class="term" href="#term-board-reserve">ЩР-РЕЗЕРВ</a></h4>
-              <p>Отдельные L-R и N-R. <a class="term" href="#term-rcbo">Дифавтоматы</a> или <a class="term" href="#term-rcd">УЗО</a> типа A после проверки нейтрали MUST.</p>
-            </article>
-            <div class="arrow" aria-hidden="true">→</div>
-            <article class="node">
-              <h4>Потребители MUST</h4>
-              <p>Котёл, циркуляционный насос, свет, связь, охрана, холодильник, ПК и автоматика.</p>
-            </article>
-          </div>
-
-          <div class="branch-title">Аккумуляторная ветвь</div>
-          <div class="battery-flow">
-            <article class="node">
-              <h4><a class="term" href="#term-8s">8S</a> <a class="term" href="#term-lifepo4">LiFePO₄</a> + <a class="term" href="#term-bms">BMS</a></h4>
-              <p>25,6 В номинально. Практично использовать BMS с непрерывным разрядом 200 А.</p>
-            </article>
-            <div class="arrow" aria-hidden="true">→</div>
-            <article class="node">
-              <h4><a class="term" href="#term-fdc">F-DC</a></h4>
-              <p>DC-предохранитель максимально близко к плюсу батареи.</p>
-            </article>
-            <div class="arrow" aria-hidden="true">→</div>
-            <article class="node">
-              <h4><a class="term" href="#term-qsdc">QS-DC</a> + <a class="term" href="#term-precharge">предзаряд</a></h4>
-              <p>Сервисное отключение и ограничение броска тока.</p>
-            </article>
-            <div class="arrow" aria-hidden="true">→</div>
-            <article class="node primary">
-              <h4><a class="term" href="#term-bat">BAT+ / BAT− MUST</a></h4>
-              <p>Короткие силовые кабели, рассчитанные на ток более 150 А.</p>
-            </article>
-          </div>
-
-          <div class="pe-rail">
-            <a class="term" href="#term-pe">PE-шина</a> непрерывно соединяется с корпусами Hybrid, MUST, щитов, УЗИП и металлическим корпусом АКБ. PE не коммутируется. Минус батареи не соединяется с PE без прямого требования изготовителя.
-          </div>
+        <div class="chain">
+          <article class="node">
+            <h4>Трёхфазный ввод</h4>
+            <p><a class="term" href="#term-l123">L1</a> + <a class="term" href="#term-n">N</a> + <a class="term" href="#term-pe">PE</a></p>
+            <p>Ответвление после общей вводной защиты.</p>
+          </article>
+          <div class="arrow" aria-hidden="true">→</div>
+          <article class="node">
+            <h4><a class="term" href="#term-qf-branch">QF-L1 2P</a></h4>
+            <p>Отдельная защита однофазной ветви и кабеля к стабилизатору.</p>
+          </article>
+          <div class="arrow" aria-hidden="true">→</div>
+          <article class="node primary">
+            <h4>Энергия Hybrid 1Ф</h4>
+            <p><a class="term" href="#term-in-out">IN</a>: L1 + N + PE.</p>
+            <p><a class="term" href="#term-in-out">OUT</a>: L1′ + N + PE.</p>
+          </article>
+          <div class="arrow" aria-hidden="true">→</div>
+          <article class="node">
+            <h4><a class="term" href="#term-qf-m">QF-M 2P</a></h4>
+            <p>Автомат перед MUST; руководство указывает 32 А.</p>
+          </article>
+          <div class="arrow" aria-hidden="true">→</div>
+          <article class="node primary">
+            <h4>MUST EP18-3024 PRO</h4>
+            <p>3 кВт, вход и выход 230 В.</p>
+            <p>АКБ 24 В: две ветви 8S.</p>
+          </article>
+          <div class="arrow" aria-hidden="true">→</div>
+          <article class="node">
+            <h4><a class="term" href="#term-qs-byp">QS-BYP 2P</a></h4>
+            <p><a class="term" href="#term-i0ii">I–0–II</a>, переключение
+              <a class="term" href="#term-bbm">с разрывом</a>.</p>
+          </article>
+          <div class="arrow" aria-hidden="true">→</div>
+          <article class="node">
+            <h4>Щит L1-РЕЗЕРВ</h4>
+            <p>Две сплит-системы, компьютер, холодильник Sharp.</p>
+          </article>
+        </div>
+        <div class="pe-rail">
+          <a class="term" href="#term-pe">PE</a> непрерывно подключается к корпусам «Энергии», MUST, щитов и металлическому корпусу АКБ.
+          PE не коммутируется. Минус батареи не соединяется с PE без прямого требования изготовителя.
         </div>
       </div>
 
-      <div class="callout warning">
-        <strong>Нейтраль и УЗО требуют проверки конкретного аппарата.</strong>
-        Руководство MUST не объясняет, разрывает ли он <a class="term" href="#term-n">N</a> и создаёт ли связь N–PE при работе от аккумулятора.
-        Поэтому окончательную схему коммутации нейтрали и <a class="term" href="#term-rcd">УЗО</a> должен подтвердить производитель или квалифицированный электрик после измерения аппарата.
+      <div class="grid-2">
+        <div class="callout success">
+          <strong>Электрического конфликта между Hybrid и MUST нет.</strong>
+          Стабилизатор стоит перед AC-входом MUST. В сетевом режиме MUST получает уже стабилизированные 230 В;
+          при исчезновении L1 он отсоединяет вход и питает свой выход от батареи.
+        </div>
+        <div class="callout warning">
+          <strong>Байпасы не должны соединять выход MUST с сетью.</strong>
+          Сервисный переключатель должен быть типа <a class="term" href="#term-i0ii">I–0–II</a>.
+          Режим <a class="term" href="#term-export">экспорта энергии в сеть</a> на MUST оставляется выключенным.
+        </div>
       </div>
     </section>
 
     <section id="battery">
-      <h2>Подключение аккумулятора 8S LiFePO₄</h2>
+      <h2>Аккумулятор: четыре группы 4S → две ветви 8S → общий 8S2P</h2>
+      <p>Всего используется 16 одинаковых ячеек. Группы G1 и G2 образуют батарейную ветвь A,
+        группы G3 и G4 — ветвь B. Каждая ветвь имеет собственную Daly BMS 8S 250 А.</p>
+
+      <h3>1. Одна ветвь: две группы 4S последовательно</h3>
+      <div class="cell-diagram">
+        <div class="branch-title">Ветвь A: группа G1 (4S) + группа G2 (4S) = 8S</div>
+        <div class="cell-string" aria-label="Восемь ячеек последовательно, разделённые на две группы по четыре ячейки">
+          <span class="cell"><b>A1</b><small>ячейка 1</small></span><span class="series-link">+</span>
+          <span class="cell"><b>A2</b><small>ячейка 2</small></span><span class="series-link">+</span>
+          <span class="cell"><b>A3</b><small>ячейка 3</small></span><span class="series-link">+</span>
+          <span class="cell"><b>A4</b><small>ячейка 4</small></span>
+          <span class="module-boundary" title="Граница двух физических групп 4S"></span>
+          <span class="cell"><b>A5</b><small>ячейка 5</small></span><span class="series-link">+</span>
+          <span class="cell"><b>A6</b><small>ячейка 6</small></span><span class="series-link">+</span>
+          <span class="cell"><b>A7</b><small>ячейка 7</small></span><span class="series-link">+</span>
+          <span class="cell"><b>A8</b><small>ячейка 8</small></span>
+        </div>
+        <div class="sense-row" aria-label="Точки подключения измерительного шлейфа BMS">
+          <span>B0: общий −</span><span>B1: A1+</span><span>B2: A2+</span><span>B3: A3+</span><span>B4: A4+</span>
+          <span>B5: A5+</span><span>B6: A6+</span><span>B7: A7+</span><span>B8: общий +</span>
+        </div>
+      </div>
+      <p class="formula"><a class="term" href="#term-4s">4S</a> + <a class="term" href="#term-4s">4S</a> = 8S = 25,6 В номинально. Одна BMS контролирует все восемь последовательно соединённых ячеек.</p>
+
+      <div class="callout danger">
+        <strong>Нельзя ставить отдельную BMS на каждую группу 4S, а затем соединять выходы BMS последовательно.</strong>
+        Одна Daly 8S должна видеть точки <a class="term" href="#term-sense">B0…B8</a> всей ветви.
+        Вторая Daly 8S аналогично контролирует вторую ветвь из групп G3+G4.
+      </div>
+
+      <h3>2. Две независимые ветви 8S объединяются параллельно</h3>
+      <div class="pack-parallel">
+        <article class="pack">
+          <h4>PACK A: G1(4S) + G2(4S)</h4>
+          <p>8S LiFePO₄ → Daly BMS-A 250 А → совместимый Daly Parallel Module-A.</p>
+          <p>Плюс: PACK A+ → <a class="term" href="#term-fdc">F-A</a> → <a class="term" href="#term-qsdc">QS-A</a> → шина «+».</p>
+          <p>Минус: PACK A− → B− BMS-A; P−/выход parallel module → шина «−».</p>
+        </article>
+        <div class="bus"><a class="term" href="#term-busbar">Общие шины<br>«+» и «−»</a></div>
+        <article class="pack">
+          <h4>PACK B: G3(4S) + G4(4S)</h4>
+          <p>8S LiFePO₄ → Daly BMS-B 250 А → совместимый Daly Parallel Module-B.</p>
+          <p>Плюс: PACK B+ → <a class="term" href="#term-fdc">F-B</a> → <a class="term" href="#term-qsdc">QS-B</a> → шина «+».</p>
+          <p>Минус: PACK B− → B− BMS-B; P−/выход parallel module → шина «−».</p>
+        </article>
+      </div>
+      <p class="formula">Шины «+ / −» → главный DC-предохранитель → главный разъединитель и предзаряд → BAT+ / BAT− MUST.</p>
+
+      <div class="callout danger">
+        <strong>Две обычные Daly BMS нельзя считать параллельно совместимыми только из-за номинала 250 А.</strong>
+        Официальные материалы Daly требуют для параллельных PACK систему «BMS + parallel protector/module»,
+        подобранную к точной модели. До подтверждения маркировки обеих BMS и наличия соответствующих модулей
+        прямое объединение P− двух стандартных BMS в общую шину не разрешается.
+      </div>
+
       <div class="grid-2">
         <article class="card">
-          <h3>Плюсовая цепь</h3>
-          <p>Cell 8+ → <a class="term" href="#term-fdc">F-DC</a> → <a class="term" href="#term-qsdc">QS-DC</a> → <a class="term" href="#term-precharge">предзаряд</a> → BAT+ MUST.</p>
+          <h3>Равномерное распределение тока</h3>
+          <ul>
+            <li>Обе ветви собираются из одинаковых ячеек одной модели, ёмкости и возраста.</li>
+            <li>Перед параллельным соединением напряжение и степень заряда PACK A и PACK B должны быть практически одинаковыми.</li>
+            <li>Силовые кабели от PACK A и PACK B до общих шин должны иметь одинаковое сечение, длину, наконечники и максимально близкое сопротивление.</li>
+            <li>Каждая ветвь получает отдельный DC-предохранитель возле своего плюса и собственный разъединитель.</li>
+            <li>Каждая ветвь должна выдерживать полную нагрузку MUST: после отключения одной BMS весь ток перейдёт на оставшийся PACK.</li>
+          </ul>
         </article>
         <article class="card">
-          <h3>Минусовая цепь</h3>
-          <p>Cell 1− → <a class="term" href="#term-bminus">B− BMS</a>; P− BMS → BAT− MUST. Если BMS имеет отдельный C−, подключение выполняется только по её паспорту.</p>
-        </article>
-        <article class="card">
-          <h3>Контроль ячеек</h3>
-          <p>Все восемь измерительных проводов и датчики температуры подключаются к BMS в порядке, установленном её производителем.</p>
-        </article>
-        <article class="card">
-          <h3>Связь с MUST</h3>
-          <p><a class="term" href="#term-rscan">RS-485/CAN</a> подключаются только при подтверждённом совпадении протоколов. Иначе применяется профиль User-Defined с управлением по напряжению.</p>
+          <h3>Измерительные провода B0…B8</h3>
+          <ul>
+            <li>Используется штатный шлейф Daly, соответствующий конкретной BMS 8S.</li>
+            <li>Шлейф подключается строго по порядку B0, B1…B8 при отключённом от BMS разъёме.</li>
+            <li>До подключения разъёма мультиметром проверяется напряжение между каждой соседней парой контактов.</li>
+            <li>Провода должны быть одного сечения, защищены от перетирания и проложены вдали от силовых кабелей.</li>
+          </ul>
         </article>
       </div>
 
-      <div class="stats" aria-label="Основные расчётные значения">
-        <div class="stat"><b>3 кВт</b><span>Номинальная выходная мощность MUST</span></div>
-        <div class="stat"><b>≈130–155 А</b><span>Ток аккумулятора при нагрузке 3 кВт</span></div>
-        <div class="stat"><b>200 А</b><span>Практичный непрерывный ток BMS</span></div>
+      <div class="callout info">
+        <strong>Поправка о длине измерительных проводов.</strong>
+        Для проводов B0…B8 геометрически одинаковая длина обычно не является обязательным условием:
+        по ним течёт очень малый измерительный ток. Важнее использовать штатный шлейф, одинаковое сечение,
+        правильный порядок и надёжные соединения. Одинаковая длина и сопротивление критичны для
+        <em>силовых</em> плюсовых и минусовых кабелей двух параллельных PACK — именно они определяют
+        <a class="term" href="#term-current-sharing">деление тока</a>.
       </div>
 
+      <div class="stats">
+        <div class="stat"><b>8S2P</b><span>Две независимые 8S ветви параллельно</span></div>
+        <div class="stat"><b>2 × 250 А</b><span>Две Daly BMS; каждая рассчитана на свой PACK</span></div>
+        <div class="stat"><b>≈130–155 А</b><span>Оценка общего тока АКБ при выходе MUST 3 кВт</span></div>
+      </div>
+      <p>Если ёмкость одной ячейки равна C А·ч, номинальная ёмкость всей сборки приблизительно 2C А·ч,
+        а энергия — 25,6 × 2C Вт·ч до учёта допустимой глубины разряда и потерь.</p>
+    </section>
+
+    <section id="loads">
+      <h2>Проверка нагрузок фазы L1</h2>
+      <table>
+        <thead><tr><th>Нагрузка</th><th>Что учитывать</th><th>Условие работы от MUST</th></tr></thead>
+        <tbody>
+          <tr><td>Сплит-система №1</td><td>Фактическая входная мощность и максимальный ток с шильдика, а не мощность охлаждения в BTU.</td><td>Предпочтительно инверторная модель; запуск и максимальная мощность проверяются измерением.</td></tr>
+          <tr><td>Сплит-система №2</td><td>Не должна одновременно выводить суммарную нагрузку за пределы 3 кВт.</td><td>Желательно задержанное или приоритетное включение после первой сплит-системы.</td></tr>
+          <tr><td>Компьютер</td><td>Системный блок, монитор и периферия учитываются вместе; БП может иметь краткий бросок тока.</td><td>Обычно допустим при сохранении запаса для компрессоров.</td></tr>
+          <tr><td>Холодильник Sharp</td><td>Компрессор имеет пусковой ток; модель и потребляемая мощность пока неизвестны.</td><td>Считать приоритетной нагрузкой и не отключать системой разгрузки раньше кондиционеров.</td></tr>
+        </tbody>
+      </table>
       <div class="callout warning">
-        <strong>Предохранитель и кабель выбираются совместно.</strong>
-        В руководстве MUST указана защита 150 А / 58 VDC. Внешний DC-предохранитель должен быть согласован с ней, допустимым током BMS, сечением кабеля и отключающей способностью.
-        Для короткой линии часто требуется медь порядка 50 мм², но итог определяют длина, температура, способ прокладки и расчёт падения напряжения.
+        <strong>Нельзя заранее подтвердить одновременную работу двух сплит-систем, компьютера и холодильника.</strong>
+        Номинал MUST — 3 кВт, а практический длительный ориентир с запасом — около 2,4 кВт.
+        Нужны мощности и максимальные токи обеих сплит-систем и холодильника Sharp.
+        Если сумма выше, установить <a class="term" href="#term-load-shedding">разгрузку нагрузки</a>:
+        холодильник и компьютер оставить приоритетными, кондиционеры отключать по току, низкому заряду или очередности.
+      </div>
+      <div class="callout info">
+        <strong>Нагрузка «Энергии» в сетевом режиме больше нагрузки MUST.</strong>
+        Через однофазный стабилизатор одновременно проходят мощность потребителей и мощность зарядки аккумуляторов.
+        Его номинал должен покрывать нагрузку до 3 кВт плюс заряд MUST и иметь запас с учётом просадки входного напряжения.
+        Точная модель и мощность однофазного Hybrid всё ещё нужны.
       </div>
     </section>
 
     <section id="compatibility">
-      <h2>Будут ли «Энергия» и MUST электрически конфликтовать</h2>
-      <div class="callout success">
-        <strong>При показанной схеме — нет.</strong>
-        «Энергия» последовательно стабилизирует вход MUST. В сетевом режиме MUST принимает её выход как обычную сеть, питает резервную группу и заряжает батарею.
-        При пропадании сети он отключает вход и создаёт собственные 230 В. Силовые выходы двух устройств нигде не соединены параллельно.
-      </div>
-      <div class="grid-2">
-        <div class="callout danger">
-          <strong>Неправильный сервисный байпас</strong>
-          Переключатель обязан иметь положения <a class="term" href="#term-i0ii">I–0–II</a> и работать по принципу
-          <a class="term" href="#term-bbm">«сначала отключить, затем включить»</a>.
-        </div>
-        <div class="callout danger">
-          <strong>Экспорт в сеть</strong>
-          Функцию <a class="term" href="#term-export">экспорта</a> MUST необходимо оставить выключенной.
-        </div>
-        <div class="callout warning">
-          <strong>Ошибочное объединение нейтралей</strong>
-          N-R резервного щита нельзя самовольно объединять с нейтралями прямых нагрузок после разных УЗО.
-        </div>
-        <div class="callout info">
-          <strong>Переключение на батарею — не конфликт</strong>
-          Ступень сервостабилизатора или краткая просадка может вызвать переход MUST на батарею. Это штатная реакция.
-        </div>
-      </div>
-    </section>
-
-    <section id="instability">
-      <h2>Работа при просадках, импульсах и шуме</h2>
+      <h2>Нестабильная сеть и отсутствие электрического конфликта</h2>
       <div class="grid-2">
         <article class="card">
-          <h3>Что система исправляет</h3>
-          <ul>
-            <li>Длительные отклонения напряжения в рабочем диапазоне исправляет Hybrid.</li>
-            <li>Отключение Hybrid и задержку его запуска перекрывает аккумулятор MUST.</li>
-            <li>Грозовые и коммутационные импульсы ограничивает <a class="term" href="#term-spd">УЗИП</a> при исправном заземлении.</li>
-          </ul>
+          <h3>Что делает «Энергия Hybrid»</h3>
+          <p>Корректирует длительные отклонения напряжения только на L1. Он не влияет на L2/VoTo и L3.</p>
+          <p>Он не исправляет частоту и не гарантирует полное подавление высокочастотных помех.</p>
         </article>
         <article class="card">
-          <h3>Что исправляется не полностью</h3>
-          <ul>
-            <li>Hybrid не корректирует частоту, гармоники и высокочастотные помехи.</li>
-            <li>MUST не является online-ИБП: в сетевом режиме часть помех проходит через его внутренний байпас.</li>
-            <li><a class="term" href="#term-emi">EMI-фильтр</a> добавляют только после измерений, поскольку он может увеличить ток утечки.</li>
-          </ul>
-        </article>
-      </div>
-      <div class="callout info">
-        <strong>Настройка диапазона входа MUST.</strong>
-        После исправного Hybrid обычно разумен режим <a class="term" href="#term-ups-apl">UPS 170–280 В</a>.
-        Широкий APL 90–280 В снижает число переходов на батарею, но при байпасе Hybrid допускает к нагрузке более широкий диапазон напряжения.
-      </div>
-    </section>
-
-    <section id="loads">
-      <h2>Допустимые нагрузки</h2>
-      <div class="grid-2">
-        <article class="card">
-          <h3>После «Энергия Hybrid» — без аккумуляторного резерва</h3>
-          <ul>
-            <li>Электроплита, бойлер и электрообогрев.</li>
-            <li>Насосы, холодильное оборудование, кондиционеры и компрессоры.</li>
-            <li>Прочая бытовая техника в пределах мощности каждой фазы.</li>
-            <li>Трёхфазные двигатели — только при включённой защите фаз и правильном чередовании.</li>
-          </ul>
-          <p>Нужно учитывать пусковой ток двигателей и снижение доступной мощности стабилизатора при низком входном напряжении.</p>
-        </article>
-        <article class="card">
-          <h3>После MUST — резерв 3 кВт</h3>
-          <ul>
-            <li>Освещение, связь, охрана и домашняя автоматика.</li>
-            <li>Газовый котёл и циркуляционные насосы.</li>
-            <li>Холодильник, компьютеры и чувствительная электроника.</li>
-          </ul>
-          <p>Суммарно не более 3 кВт; для продолжительной работы практично держаться до 2,4 кВт. Не подключать электрокотёл, плиту, бойлер, чайник, сварку, мощный скважинный насос, большой компрессор или трёхфазную нагрузку.</p>
+          <h3>Что делает MUST</h3>
+          <p>При нормальном выходе Hybrid работает от сети и заряжает АКБ. При пропадании L1 или выходе напряжения за допуск переходит на батарею.</p>
+          <p>После исправного Hybrid разумен режим <a class="term" href="#term-ups-apl">UPS 170–280 В</a>; широкий APL применять только после проверки причин частых переключений.</p>
         </article>
       </div>
       <div class="callout warning">
-        <strong>Баланс фаз.</strong>
-        На L1 в сетевом режиме приходится сумма прямых нагрузок L1, нагрузки MUST и зарядки аккумулятора.
-        Крупные прямые потребители желательно переносить на L2/L3, а зарядный ток ограничивать по мощности фазы, Hybrid, ввода и BMS.
+        <strong>MUST не является online-ИБП.</strong>
+        В сетевом режиме часть помех может пройти через внутренний байпас. <a class="term" href="#term-emi">EMI-фильтр</a>
+        добавляют только после измерений: неправильно выбранный фильтр может повысить ток утечки и вызвать срабатывание УЗО.
       </div>
     </section>
 
     <section id="checks">
-      <h2>Что проверить до монтажа</h2>
+      <h2>Обязательные проверки до монтажа</h2>
       <div class="grid-2">
-        <article class="card">
-          <h3>Точная модель «Энергии»</h3>
-          <p>Инструкция охватывает несколько моделей. Нужна фотография шильдика и номинальная мощность. Например, 9000/3 обычно означает приблизительно 3 кВА на каждую фазу.</p>
-        </article>
-        <article class="card">
-          <h3>Мощность выбранной фазы</h3>
-          <p>Ориентир — около 5 кВА на фазу при зарядке 30 А и 7–8 кВА при зарядке 80 А одновременно с нагрузкой MUST 3 кВт.</p>
-        </article>
-        <article class="card">
-          <h3>Настройки LiFePO₄</h3>
-          <p>Использовать Li или User-Defined, отключить выравнивание и задать напряжения по паспорту сборки. Зарядный ток ограничить возможностями ячеек и BMS.</p>
-        </article>
-        <article class="card">
-          <h3>Нейтраль и защитное отключение</h3>
-          <p>Проверить внутреннюю коммутацию N и связь N–PE в батарейном режиме, после чего выбрать схему УЗО/дифавтоматов.</p>
-        </article>
+        <article class="card"><h3>Оборудование</h3><p>Точная модель и мощность однофазного Hybrid; полные артикулы обеих Daly 8S 250 А; подтверждение поддержки PACK Parallel и подходящие parallel modules.</p></article>
+        <article class="card"><h3>Ячейки</h3><p>Одинаковая модель, ёмкость, внутреннее сопротивление и состояние всех 16 ячеек; механическая стяжка по паспорту ячеек.</p></article>
+        <article class="card"><h3>Параллельное соединение</h3><p>Выравнивание напряжения PACK A и PACK B до объединения, отдельные предохранители, одинаковые силовые кабели и общие шины достаточного сечения.</p></article>
+        <article class="card"><h3>Нагрузки</h3><p>Шильдики двух сплит-систем и холодильника Sharp, измерение установившегося и пускового тока, алгоритм разгрузки.</p></article>
+        <article class="card"><h3>Нейтраль и УЗО</h3><p>Проверить, коммутирует ли MUST нейтраль и формирует ли связь N–PE в батарейном режиме; после этого выбрать схему УЗО/дифавтоматов.</p></article>
+        <article class="card"><h3>Настройки зарядки</h3><p>Профиль Li/User-Defined, отключённое выравнивание, зарядный ток не выше допуска ячеек, каждой BMS, кабелей и мощности L1.</p></article>
       </div>
     </section>
 
     <section id="sources">
-      <h2>Основания и границы заключения</h2>
+      <h2>Источники и границы документа</h2>
       <p class="sources">
-        Источники:
-        <a href="https://energiya.com/pages/img/energy-hybrid.pdf">руководство «Энергия Hybrid»</a> и
-        <a href="https://baikaltesla.com/wp-content/uploads/2025/04/Must-EP18_3024-PRO-Manual_RUS.pdf">руководство MUST EP18-3024 PRO</a>.
+        <a href="https://energiya.com/pages/img/energy-hybrid.pdf">Руководство «Энергия Hybrid»</a> ·
+        <a href="https://baikaltesla.com/wp-content/uploads/2025/04/Must-EP18_3024-PRO-Manual_RUS.pdf">Руководство MUST EP18-3024 PRO</a> ·
+        <a href="https://www.dalybms.com/8s-bms-wiring-tutorial/">Официальная схема Daly 8S</a> ·
+        <a href="https://www.dalybms.com/daly-pack-parallel-bms-matching-instructions1a-daly-product/">Официальные указания Daly Pack Parallel</a>.
       </p>
-      <div class="callout warning">
-        Схема является технической концепцией, а не рабочим проектом электроустановки. Окончательный монтаж нельзя выполнять без точной модели Hybrid,
-        параметров батареи/BMS, перечня нагрузок, данных о вводе и системе заземления. Работы с сетью и аккумулятором должен выполнять квалифицированный специалист.
+      <div class="callout danger">
+        Это принципиальная схема, а не рабочий проект. Напряжение сети опасно для жизни, а 8S2P LiFePO₄ способна отдать ток,
+        вызывающий пожар и расплавление металла. Подбор защиты, шин, кабелей и монтаж должен выполнять квалифицированный специалист.
       </div>
     </section>
 
     <section id="glossary" class="glossary-group">
       <h2>Словарь сокращений и обозначений</h2>
-      <p>Нажатие на подчёркнутый термин выше приводит к соответствующей строке. Обозначения QF-M, QF-B, QF-O и QS-BYP введены в этой схеме для удобства и могут отсутствовать на заводских наклейках.</p>
+      <p>Обозначения автоматов и щитов введены для этой схемы; надписи на реальном оборудовании могут отличаться.</p>
 
-      <h3>Провода, сеть и электрические величины</h3>
+      <h3>Сеть и коммутация</h3>
       <table>
         <thead><tr><th>Обозначение</th><th>По-русски</th><th>Простое объяснение</th></tr></thead>
         <tbody>
-          <tr id="term-l123" class="glossary-row"><td>L1, L2, L3; L1′</td><td>Фазные провода</td><td>По L1–L3 электричество приходит в дом. Между фазой и N примерно 230 В, между двумя фазами — около 400 В. Штрих в L1′ означает фазу после стабилизатора.<br><a class="back" href="#scheme">Вернуться к схеме ↑</a></td></tr>
-          <tr id="term-n" class="glossary-row"><td>N</td><td>Рабочая нейтраль, «ноль»</td><td>Вместе с одной фазой образует сеть 230 В. Это не защитное заземление.<br><a class="back" href="#scheme">Вернуться к схеме ↑</a></td></tr>
-          <tr id="term-pe" class="glossary-row"><td>PE</td><td>Защитное заземление</td><td>Жёлто-зелёный провод безопасности, соединённый с корпусами. В нормальной работе ток по нему не течёт. PE нельзя разрывать выключателем.<br><a class="back" href="#scheme">Вернуться к схеме ↑</a></td></tr>
-          <tr id="term-pen" class="glossary-row"><td>PEN</td><td>Совмещённый нулевой и защитный провод</td><td>Один общий провод во вводной сети, выполняющий функции N и PE. После разделения N и PE снова не объединяют.</td></tr>
-          <tr id="term-split-pen" class="glossary-row"><td>После учёта и разделения PEN</td><td>После счётчика и главной точки заземления</td><td>Ввод уже прошёл учёт, а PEN квалифицированно разделён на N и PE. PEN нельзя разрывать обычным автоматом.<br><a class="back" href="#scheme">Вернуться к схеме ↑</a></td></tr>
-          <tr id="term-tn" class="glossary-row"><td>TN / TN-C-S</td><td>Тип системы заземления</td><td>Нейтраль источника заземлена; до дома может приходить PEN, который во вводном щите разделяется на N и PE.</td></tr>
-          <tr id="term-ac" class="glossary-row"><td>AC</td><td>Переменный ток</td><td>Домовая сеть 230/400 В и вход/выход переменного напряжения устройств.<br><a class="back" href="#scheme">Вернуться к схеме ↑</a></td></tr>
-          <tr id="term-dc" class="glossary-row"><td>DC</td><td>Постоянный ток</td><td>Ток аккумулятора. Здесь напряжение около 25,6 В, но ток может превышать 150 А.</td></tr>
-          <tr id="term-power" class="glossary-row"><td>кВт / кВА</td><td>Киловатт / киловольт-ампер</td><td>кВт — активная мощность, кВА — полная нагрузка на проводку и стабилизатор.</td></tr>
+          <tr id="term-l123" class="glossary-row"><td>L1, L2, L3; L1′</td><td>Фазы трёхфазного ввода</td><td>Между каждой фазой и N около 230 В. L1′ — выход однофазного стабилизатора на первой фазе.<br><a class="back" href="#phases">К распределению фаз ↑</a></td></tr>
+          <tr id="term-n" class="glossary-row"><td>N</td><td>Рабочая нейтраль, «ноль»</td><td>Вместе с одной фазой образует сеть 230 В. Нейтрали после разных УЗО не объединяются.</td></tr>
+          <tr id="term-pe" class="glossary-row"><td>PE</td><td>Защитное заземление</td><td>Соединяется с металлическими корпусами и никогда не разрывается выключателями.</td></tr>
+          <tr id="term-pen" class="glossary-row"><td>PEN</td><td>Совмещённый ноль и защита</td><td>На вводе может совмещать N и PE; разделяется в установленной проектом точке и затем повторно не объединяется.</td></tr>
+          <tr id="term-spd" class="glossary-row"><td>УЗИП</td><td>Защита от импульсов</td><td>Ограничивает грозовые и коммутационные перенапряжения при исправном заземлении.</td></tr>
+          <tr id="term-qf-branch" class="glossary-row"><td>QF-L1/L2/L3 2P</td><td>Двухполюсные автоматы ветвей</td><td>Защищают кабель отдельной фазы и отключают фазу с нейтралью; номиналы определяются проектом.</td></tr>
+          <tr id="term-qf-m" class="glossary-row"><td>QF-M 2P</td><td>Автомат перед MUST</td><td>В руководстве MUST для модели 3 кВт рекомендован 32 А; питающая линия должна этому соответствовать.</td></tr>
+          <tr id="term-in-out" class="glossary-row"><td>IN / OUT</td><td>Вход / выход</td><td>IN — питание входит в устройство, OUT — выходит к следующему устройству.</td></tr>
+          <tr id="term-qs-byp" class="glossary-row"><td>QS-BYP 2P</td><td>Сервисный переключатель</td><td>Выбирает выход MUST или стабилизированную сеть, одновременно переключая фазу и нейтраль.</td></tr>
+          <tr id="term-i0ii" class="glossary-row"><td>I–0–II</td><td>Первый источник — выключено — второй источник</td><td>Три фиксированных положения безопасного переключателя.</td></tr>
+          <tr id="term-bbm" class="glossary-row"><td>С разрывом / break-before-make</td><td>Сначала отключить, потом включить</td><td>Исключает параллельное соединение выхода MUST с сетью.</td></tr>
+          <tr id="term-export" class="glossary-row"><td>Экспорт в сеть</td><td>Отдача энергии наружу</td><td>Передача энергии батареи в электросеть. В этой схеме режим MUST должен быть выключен.</td></tr>
+          <tr id="term-ups-apl" class="glossary-row"><td>UPS / APL</td><td>Узкий / широкий диапазон входа</td><td>UPS раньше переходит на батарею; APL дольше остаётся на сети и допускает больший разброс напряжения.</td></tr>
+          <tr id="term-emi" class="glossary-row"><td>EMI-фильтр</td><td>Фильтр высокочастотных помех</td><td>Ослабляет часть проводных помех, но может увеличить ток утечки.</td></tr>
         </tbody>
       </table>
 
-      <h3>Автоматы, защита и переключатели</h3>
+      <h3>Аккумулятор</h3>
       <table>
         <thead><tr><th>Обозначение</th><th>По-русски</th><th>Простое объяснение</th></tr></thead>
         <tbody>
-          <tr id="term-qf" class="glossary-row"><td>QF</td><td>Автоматический выключатель</td><td>Отключает цепь при коротком замыкании или опасной перегрузке.</td></tr>
-          <tr id="term-qf-in" class="glossary-row"><td>QF-IN</td><td>Вводной автомат</td><td>Главный автомат перед системой. Способ коммутации N выбирается по типу заземления; PEN не разрывают.<br><a class="back" href="#scheme">Вернуться к схеме ↑</a></td></tr>
-          <tr id="term-spd" class="glossary-row"><td>УЗИП</td><td>Защита от импульсных перенапряжений</td><td>Отводит в заземление короткие импульсы от грозы и коммутаций. Не заменяет стабилизатор, автомат или УЗО.<br><a class="back" href="#scheme">Вернуться к схеме ↑</a></td></tr>
-          <tr id="term-t1-t2" class="glossary-row"><td>T1 + T2</td><td>Классы УЗИП</td><td>T1 принимает часть тока молнии, T2 ограничивает остаточные и коммутационные импульсы.<br><a class="back" href="#scheme">Вернуться к схеме ↑</a></td></tr>
-          <tr id="term-vl" class="glossary-row"><td>ВЛ</td><td>Воздушная линия</td><td>Электросеть, идущая к дому по опорам; сильнее подвержена грозовым импульсам.<br><a class="back" href="#scheme">Вернуться к схеме ↑</a></td></tr>
-          <tr id="term-qf-m" class="glossary-row"><td>QF-M 2P</td><td>Двухполюсный автомат входа MUST</td><td>Отключает фазу и нейтраль. В руководстве указан номинал 32 А, но кабель и ввод должны его выдерживать.<br><a class="back" href="#scheme">Вернуться к схеме ↑</a></td></tr>
-          <tr id="term-qf-o" class="glossary-row"><td>QF-O</td><td>Автомат выхода MUST</td><td>Защищает кабель от MUST до резервного щита; выбирается по кабелю и нагрузке.<br><a class="back" href="#scheme">Вернуться к схеме ↑</a></td></tr>
-          <tr id="term-qf-b" class="glossary-row"><td>QF-B 2P</td><td>Автомат сервисного обхода</td><td>Защищает путь прямого питания резервного щита во время обслуживания MUST.<br><a class="back" href="#scheme">Вернуться к схеме ↑</a></td></tr>
-          <tr id="term-qs-byp" class="glossary-row"><td>QS-BYP 2P</td><td>Двухполюсный переключатель байпаса</td><td>Выбирает питание резервного щита от стабилизированной сети или от MUST, переключая фазу и нейтраль.<br><a class="back" href="#scheme">Вернуться к схеме ↑</a></td></tr>
-          <tr id="term-i0ii" class="glossary-row"><td>I–0–II</td><td>Три положения</td><td>I — первый источник, 0 — отключено, II — второй источник.<br><a class="back" href="#scheme">Вернуться к схеме ↑</a></td></tr>
-          <tr id="term-bbm" class="glossary-row"><td>Break-before-make</td><td>Сначала разрыв, затем включение</td><td>Сеть и выход MUST никогда не соединяются одновременно.<br><a class="back" href="#scheme">Вернуться к схеме ↑</a></td></tr>
-          <tr id="term-bypass" class="glossary-row"><td>Байпас</td><td>Обходной путь</td><td>Питание нагрузки в обход устройства. Байпас Hybrid пропускает нестабильную сеть без стабилизации.<br><a class="back" href="#scheme">Вернуться к схеме ↑</a></td></tr>
-          <tr id="term-rcd" class="glossary-row"><td>УЗО</td><td>Устройство защитного отключения</td><td>Отключает питание при утечке тока. Само по себе от перегрузки не защищает.<br><a class="back" href="#scheme">Вернуться к схеме ↑</a></td></tr>
-          <tr id="term-rcbo" class="glossary-row"><td>RCBO / дифавтомат</td><td>Автомат с функцией УЗО</td><td>Защищает от перегрузки, короткого замыкания и утечки тока.<br><a class="back" href="#scheme">Вернуться к схеме ↑</a></td></tr>
-        </tbody>
-      </table>
-
-      <h3>Аккумулятор, BMS и MUST</h3>
-      <table>
-        <thead><tr><th>Обозначение</th><th>По-русски</th><th>Простое объяснение</th></tr></thead>
-        <tbody>
-          <tr id="term-8s" class="glossary-row"><td>8S</td><td>Восемь ячеек последовательно</td><td>Даёт 25,6 В номинально и до 29,2 В при 3,65 В на ячейку.<br><a class="back" href="#battery">Вернуться к аккумулятору ↑</a></td></tr>
-          <tr id="term-lifepo4" class="glossary-row"><td>LiFePO₄</td><td>Литий-железо-фосфатный аккумулятор</td><td>Литиевая химия с номиналом 3,2 В на ячейку; требует BMS и правильных настроек.<br><a class="back" href="#battery">Вернуться к аккумулятору ↑</a></td></tr>
-          <tr id="term-bms" class="glossary-row"><td>BMS</td><td>Система управления аккумулятором</td><td>Контролирует ячейки, температуру и ток; балансирует и аварийно отключает батарею.<br><a class="back" href="#battery">Вернуться к аккумулятору ↑</a></td></tr>
-          <tr id="term-bminus" class="glossary-row"><td>B− / P− / C−</td><td>Минусовые клеммы BMS</td><td>B− идёт к сборке, P− — к нагрузке; C− в некоторых BMS используется отдельно для зарядки.<br><a class="back" href="#battery">Вернуться к аккумулятору ↑</a></td></tr>
-          <tr id="term-bat" class="glossary-row"><td>BAT+ / BAT−</td><td>Батарейные клеммы MUST</td><td>Силовой плюс и минус постоянного тока. Ошибка полярности может повредить оборудование.<br><a class="back" href="#scheme">Вернуться к схеме ↑</a></td></tr>
-          <tr id="term-fdc" class="glossary-row"><td>F-DC</td><td>DC-предохранитель</td><td>Ставится возле плюса батареи и отключает ток короткого замыкания. Должен иметь DC-рейтинг.<br><a class="back" href="#battery">Вернуться к аккумулятору ↑</a></td></tr>
-          <tr id="term-qsdc" class="glossary-row"><td>QS-DC</td><td>Разъединитель аккумулятора</td><td>Позволяет вручную и безопасно отключить батарею от MUST.<br><a class="back" href="#battery">Вернуться к аккумулятору ↑</a></td></tr>
-          <tr id="term-precharge" class="glossary-row"><td>Предзаряд</td><td>Ограничение пускового тока</td><td>Заранее заряжает конденсаторы MUST через сопротивление, уменьшая искру и риск отключения BMS.<br><a class="back" href="#battery">Вернуться к аккумулятору ↑</a></td></tr>
-          <tr id="term-rscan" class="glossary-row"><td>RS-485 / CAN</td><td>Цифровые линии связи</td><td>Передают данные между совместимыми BMS и MUST. Совпадения разъёма недостаточно — должен совпадать протокол.<br><a class="back" href="#battery">Вернуться к аккумулятору ↑</a></td></tr>
-          <tr id="term-ups-apl" class="glossary-row"><td>UPS / APL</td><td>Узкий / широкий диапазон входа</td><td>UPS раньше переходит на батарею; APL допускает примерно 90–280 В и дольше остаётся на сети.<br><a class="back" href="#instability">Вернуться к нестабильной сети ↑</a></td></tr>
-          <tr id="term-emi" class="glossary-row"><td>EMI-фильтр</td><td>Фильтр высокочастотных помех</td><td>Ослабляет радиочастотный шум, но может увеличить ток утечки; добавляется по результатам измерений.<br><a class="back" href="#instability">Вернуться к нестабильной сети ↑</a></td></tr>
-          <tr id="term-export" class="glossary-row"><td>Экспорт в сеть</td><td>Отдача энергии наружу</td><td>Инвертор передаёт энергию батареи во внешнюю сеть. В этой схеме режим должен быть выключен.<br><a class="back" href="#compatibility">Вернуться к совместимости ↑</a></td></tr>
-        </tbody>
-      </table>
-
-      <h3>Названия щитов и проводов в этой схеме</h3>
-      <table>
-        <thead><tr><th>Обозначение</th><th>По-русски</th><th>Простое объяснение</th></tr></thead>
-        <tbody>
-          <tr id="term-board-energy" class="glossary-row"><td>ЩР-ЭНЕРГИЯ</td><td>Щит прямых нагрузок</td><td>Получает стабильное напряжение, но его потребители отключаются вместе с сетью.<br><a class="back" href="#scheme">Вернуться к схеме ↑</a></td></tr>
-          <tr id="term-board-reserve" class="glossary-row"><td>ЩР-РЕЗЕРВ</td><td>Щит резервных нагрузок</td><td>Отдельный однофазный щит после MUST; продолжает работать от батареи.<br><a class="back" href="#scheme">Вернуться к схеме ↑</a></td></tr>
-          <tr id="term-lrnr" class="glossary-row"><td>L-R / N-R</td><td>Фаза и нейтраль резерва</td><td>Отдельные проводники после MUST; их нельзя случайно объединять с прямыми нагрузками после разных защит.<br><a class="back" href="#scheme">Вернуться к схеме ↑</a></td></tr>
-          <tr id="term-in-out" class="glossary-row"><td>IN / OUT</td><td>Вход / выход</td><td>IN — куда питание входит, OUT — откуда выходит. Путать их нельзя.<br><a class="back" href="#scheme">Вернуться к схеме ↑</a></td></tr>
+          <tr id="term-4s" class="glossary-row"><td>4S</td><td>Четыре ячейки последовательно</td><td>Физическая группа из четырёх LiFePO₄-ячеек, около 12,8 В номинально.</td></tr>
+          <tr id="term-8s2p" class="glossary-row"><td>8S2P</td><td>Две параллельные ветви по восемь ячеек</td><td>Каждая ветвь имеет 25,6 В; параллель увеличивает ёмкость, но не напряжение.</td></tr>
+          <tr id="term-bms" class="glossary-row"><td>BMS</td><td>Система управления батареей</td><td>Контролирует напряжения ячеек, температуру и ток, выполняет аварийное отключение.</td></tr>
+          <tr id="term-sense" class="glossary-row"><td>B0…B8</td><td>Измерительные точки BMS</td><td>B0 подключается к общему минусу, B1…B8 — последовательно к плюсу каждой ячейки вплоть до общего плюса.</td></tr>
+          <tr id="term-parallel-module" class="glossary-row"><td>Daly Parallel Module</td><td>Модуль безопасной параллельной работы PACK</td><td>Согласованный с BMS модуль, ограничивающий нежелательные токи между параллельными батареями. Требуется подтверждение Daly для точной модели.</td></tr>
+          <tr id="term-fdc" class="glossary-row"><td>F-A / F-B / F-DC</td><td>DC-предохранители</td><td>Отдельно защищают каждую батарейную ветвь и общую линию. Должны иметь DC-рейтинг и достаточную отключающую способность.</td></tr>
+          <tr id="term-qsdc" class="glossary-row"><td>QS-A / QS-B / QS-DC</td><td>DC-разъединители</td><td>Позволяют безопасно отключить отдельную ветвь или весь аккумулятор.</td></tr>
+          <tr id="term-busbar" class="glossary-row"><td>Шины «+» и «−»</td><td>Общие силовые распределители</td><td>Точки, в которых две защищённые ветви соединяются параллельно и откуда питание идёт к MUST.</td></tr>
+          <tr id="term-current-sharing" class="glossary-row"><td>Деление тока</td><td>Распределение нагрузки между PACK A и B</td><td>Зависит от сопротивления ячеек, BMS, соединений и силовых кабелей; поэтому кабели до шин делают максимально одинаковыми.</td></tr>
+          <tr id="term-load-shedding" class="glossary-row"><td>Разгрузка нагрузки</td><td>Автоматическое отключение неприоритетных потребителей</td><td>Контактор или контроллер отключает кондиционеры раньше холодильника и компьютера при перегрузке или низком заряде.</td></tr>
         </tbody>
       </table>
     </section>
   </main>
 
   <footer>
-    <div class="page">
-      Документ подготовлен по руководствам изготовителей. Перед монтажом требуется проверка конкретного оборудования и проект квалифицированного электрика.
-    </div>
+    <div class="page">Версия страницы учитывает однофазный «Энергия Hybrid», три независимые фазные ветви и аккумуляторную архитектуру (4S+4S)2P.</div>
   </footer>
 </body>
 </html>
